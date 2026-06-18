@@ -28,7 +28,6 @@ class NotificationService {
     await _notificationsPlugin.initialize(initSettings);
   }
 
-  // Fungsi untuk test notifikasi instan
   Future<void> showInstantNotification({required int id, required String title, required String body}) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'vetcare_channel_id',
@@ -44,7 +43,6 @@ class NotificationService {
     await _notificationsPlugin.show(id, title, body, platformChannelSpecifics);
   }
 
-  // Fungsi untuk menjadwalkan notifikasi (misal: Vaksin besok)
   Future<void> scheduleNotification({
     required int id,
     required String title,
@@ -69,5 +67,12 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
+  }
+  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    return await _notificationsPlugin.pendingNotificationRequests();
+  }
+
+  Future<void> cancelNotification(int id) async {
+    await _notificationsPlugin.cancel(id);
   }
 }
