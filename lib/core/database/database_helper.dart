@@ -25,7 +25,6 @@ class DatabaseHelper {
   }
 
   Future<void> _createDB(Database db, int version) async {
-    // 1. Table Users Profile (Pengganti Supabase Auth)
     await db.execute('''
       CREATE TABLE users_profile (
         id TEXT PRIMARY KEY,
