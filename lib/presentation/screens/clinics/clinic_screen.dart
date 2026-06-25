@@ -15,7 +15,9 @@ class ClinicScreen extends ConsumerStatefulWidget {
 
 class _ClinicScreenState extends ConsumerState<ClinicScreen> {
   final MapController _mapController = MapController();
-  LatLng _currentLocation = const LatLng(-7.5666, 110.8283); 
+  // Lokasi default (Surakarta), tapi sekarang titik GPS-nya dipisah sedikit 
+  // agar tidak menyatu 100% dengan data dummy klinik
+  LatLng _currentLocation = const LatLng(-7.5650, 110.8270); 
   bool _isLoadingLocation = false;
 
   @override
@@ -55,7 +57,7 @@ class _ClinicScreenState extends ConsumerState<ClinicScreen> {
       );
       _currentLocation = LatLng(position.latitude, position.longitude);
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Gagal dapat GPS: $e");
     }
 
     _finishLoadingAndFetch();
@@ -67,7 +69,12 @@ class _ClinicScreenState extends ConsumerState<ClinicScreen> {
       _isLoadingLocation = false;
     });
 
-    _mapController.move(_currentLocation, 14.0);
+    // Peta sekarang SELALU ADA di layar, jadi move() pasti berhasil!
+    try {
+      _mapController.move(_currentLocation, 14.0);
+    } catch (e) {
+      debugPrint("Peta belum siap: $e");
+    }
 
     ref.read(clinicListProvider.notifier).fetchNearbyClinics(
       _currentLocation.latitude, 
@@ -95,44 +102,18 @@ class _ClinicScreenState extends ConsumerState<ClinicScreen> {
       ),
       body: Column(
         children: [
+          // ==========================================
+          // 1. BAGIAN ATAS: PETA SELALU MUNCUL (STACK)
+          // ==========================================
           Expanded(
             flex: 2,
             child: Container(
               decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: AppTheme.outlineVariant, width: 1)),
               ),
-              child: clinicState.when(
-                data: (clinics) {
-                  List<Marker> markers = clinics.map((clinic) {
-                    return Marker(
-                      point: LatLng(clinic.lat, clinic.lng),
-                      width: 40,
-                      height: 40,
-                      child: GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(clinic.name), duration: const Duration(seconds: 2)),
-                          );
-                        },
-                        child: Icon(
-                          clinic.is24Hours ? Icons.local_hospital : Icons.location_on,
-                          color: clinic.is24Hours ? Colors.red : AppTheme.primary,
-                          size: 40,
-                        ),
-                      ),
-                    );
-                  }).toList();
-
-                  markers.add(
-                    Marker(
-                      point: _currentLocation,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
-                    ),
-                  );
-
-                  return FlutterMap(
+              child: Stack(
+                children: [
+                  FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
                       initialCenter: _currentLocation,
@@ -143,15 +124,57 @@ class _ClinicScreenState extends ConsumerState<ClinicScreen> {
                         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: 'com.vetcare.app',
                       ),
-                      MarkerLayer(markers: markers),
+                      MarkerLayer(
+                        markers: [
+                          // Marker Biru (Lokasi Pengguna)
+                          Marker(
+                            point: _currentLocation,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                          ),
+                          
+                          // Marker Klinik (Ditarik jika data sudah ada)
+                          ...(clinicState.value ?? []).map((clinic) {
+                            return Marker(
+                              point: LatLng(clinic.lat, clinic.lng),
+                              width: 40,
+                              height: 40,
+                              child: GestureDetector(
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(clinic.name), duration: const Duration(seconds: 2)),
+                                  );
+                                },
+                                child: Icon(
+                                  clinic.is24Hours ? Icons.local_hospital : Icons.location_on,
+                                  color: clinic.is24Hours ? Colors.red : AppTheme.primary,
+                                  size: 40,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      ),
                     ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
+                  ),
+                  
+                  // Jika masih loading data OSM, tampilkan loading kecil di tengah peta
+                  if (clinicState.isLoading)
+                    Container(
+                      color: Colors.white.withOpacity(0.5),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
+
+          // ==========================================
+          // 2. BAGIAN BAWAH: LIST KLINIK
+          // ==========================================
           Expanded(
             flex: 3,
             child: clinicState.when(
@@ -191,14 +214,18 @@ class _ClinicScreenState extends ConsumerState<ClinicScreen> {
                         isThreeLine: true,
                         trailing: const Icon(Icons.directions, color: AppTheme.secondary),
                         onTap: () {
-                          _mapController.move(LatLng(clinic.lat, clinic.lng), 17.0);
+                          try {
+                            _mapController.move(LatLng(clinic.lat, clinic.lng), 17.0);
+                          } catch (e) {
+                            debugPrint(e.toString());
+                          }
                         },
                       ),
                     );
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+              loading: () => const Center(child: Text('Mencari data area sekitar...')),
               error: (error, _) => Center(child: Text('Error: $error')),
             ),
           ),

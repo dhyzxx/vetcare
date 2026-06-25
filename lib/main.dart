@@ -35,12 +35,8 @@ class VetCareApp extends ConsumerWidget {
           }
           return const AuthScreen();
         },
-        loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-        error: (error, _) => Scaffold(
-          body: Center(child: Text('Error: $error')),
-        ),
+        loading: () => const AuthScreen(),
+        error: (error, _) => const AuthScreen(),
       ),
     );
   }

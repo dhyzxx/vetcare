@@ -12,6 +12,7 @@ class NotificationService {
   Future<void> init() async {
     tz.initializeTimeZones();
 
+    // Pastikan icon bawaan Android ada (kita pakai ic_launcher bawaan Flutter)
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const DarwinInitializationSettings darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -26,6 +27,20 @@ class NotificationService {
     );
 
     await _notificationsPlugin.initialize(initSettings);
+
+    // ====================================================================
+    // TAMBAHAN BARU: Meminta Izin (Pop-up) untuk Android 13+
+    // ====================================================================
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      // Minta pop-up izin memunculkan notifikasi
+      await androidImplementation.requestNotificationsPermission();
+      // Minta izin agar alarm bisa berjalan tepat waktu di background
+      await androidImplementation.requestExactAlarmsPermission();
+    }
   }
 
   Future<void> showInstantNotification({required int id, required String title, required String body}) async {
@@ -34,6 +49,7 @@ class NotificationService {
       'VetCare Reminders',
       importance: Importance.max,
       priority: Priority.high,
+      playSound: true,
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
@@ -60,14 +76,18 @@ class NotificationService {
           'Scheduled Reminders',
           importance: Importance.max,
           priority: Priority.high,
+          playSound: true,
         ),
         iOS: DarwinNotificationDetails(),
         macOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      // Menyimpan waktu jadwal ke dalam payload agar bisa dibaca di UI nanti
+      payload: scheduledDate.toIso8601String(), 
     );
   }
+
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     return await _notificationsPlugin.pendingNotificationRequests();
   }

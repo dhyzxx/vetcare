@@ -18,6 +18,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _nameController = TextEditingController();
 
   void _submitForm() async {
+    // Tutup keyboard saat tombol ditekan
+    FocusScope.of(context).unfocus(); 
+    
     if (_formKey.currentState!.validate()) {
       if (_isLogin) {
         await ref.read(authStateProvider.notifier).signIn(_emailController.text.trim(), _passwordController.text.trim());
@@ -31,8 +34,35 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
+    // Menangkap Error dan Menampilkan SnackBar Elegan
     ref.listen<AsyncValue>(authStateProvider, (_, state) {
-      if (state.hasError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error.toString(), style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+      if (state.hasError) {
+        // Membersihkan awalan "Exception: " dari pesan error backend
+        final cleanErrorMessage = state.error.toString().replaceAll('Exception: ', '');
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    cleanErrorMessage, 
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+          ),
+        );
+      }
     });
 
     return Scaffold(
@@ -45,7 +75,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               children: [
                 Icon(Icons.pets, size: 80, color: AppTheme.primary),
                 const SizedBox(height: 16),
-                Text('VetCare', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                const Text('VetCare', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppTheme.primary)),
                 const SizedBox(height: 32),
                 Card(
                   child: Padding(
@@ -58,16 +88,41 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           Text(_isLogin ? 'Welcome Back' : 'Create Account', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                           const SizedBox(height: 24),
                           if (!_isLogin) ...[
-                            TextFormField(controller: _nameController, decoration: InputDecoration(labelText: 'Full Name', prefixIcon: const Icon(Icons.person), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), validator: (v) => v!.isEmpty ? 'Wajib diisi' : null),
+                            TextFormField(
+                              controller: _nameController, 
+                              enabled: !authState.isLoading,
+                              decoration: InputDecoration(labelText: 'Full Name', prefixIcon: const Icon(Icons.person), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), 
+                              validator: (v) => v!.isEmpty ? 'Wajib diisi' : null
+                            ),
                             const SizedBox(height: 16),
                           ],
-                          TextFormField(controller: _emailController, decoration: InputDecoration(labelText: 'Email', prefixIcon: const Icon(Icons.email), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), validator: (v) => !v!.contains('@') ? 'Email tidak valid' : null),
+                          TextFormField(
+                            controller: _emailController, 
+                            enabled: !authState.isLoading,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(labelText: 'Email', prefixIcon: const Icon(Icons.email), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), 
+                            validator: (v) => !v!.contains('@') ? 'Email tidak valid' : null
+                          ),
                           const SizedBox(height: 16),
-                          TextFormField(controller: _passwordController, obscureText: true, decoration: InputDecoration(labelText: 'Password', prefixIcon: const Icon(Icons.lock), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), validator: (v) => v!.length < 6 ? 'Min. 6 karakter' : null),
+                          TextFormField(
+                            controller: _passwordController, 
+                            enabled: !authState.isLoading,
+                            obscureText: true, 
+                            decoration: InputDecoration(labelText: 'Password', prefixIcon: const Icon(Icons.lock), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), 
+                            validator: (v) => v!.length < 6 ? 'Min. 6 karakter' : null
+                          ),
                           const SizedBox(height: 24),
-                          authState.isLoading ? const Center(child: CircularProgressIndicator()) : ElevatedButton(onPressed: _submitForm, child: Text(_isLogin ? 'Login' : 'Sign Up')),
+                          
+                          // Tombol Loading / Submit
+                          authState.isLoading 
+                              ? const Center(child: CircularProgressIndicator()) 
+                              : ElevatedButton(onPressed: _submitForm, child: Text(_isLogin ? 'Login' : 'Sign Up')),
+                          
                           const SizedBox(height: 16),
-                          TextButton(onPressed: () => setState(() => _isLogin = !_isLogin), child: Text(_isLogin ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk', style: const TextStyle(color: AppTheme.primary))),
+                          TextButton(
+                            onPressed: authState.isLoading ? null : () => setState(() => _isLogin = !_isLogin), 
+                            child: Text(_isLogin ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk', style: const TextStyle(color: AppTheme.primary))
+                          ),
                         ],
                       ),
                     ),
