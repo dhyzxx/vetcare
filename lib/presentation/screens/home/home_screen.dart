@@ -53,7 +53,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.primaryContainer, width: 2),
+                  border:
+                      Border.all(color: AppTheme.primaryContainer, width: 2),
                   image: profile?.photoUrl != null
                       ? DecorationImage(
                           image: FileImage(File(profile!.photoUrl!)),
@@ -96,7 +97,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Menu Pengaturan belum tersedia untuk MVP ini.')),
+                const SnackBar(
+                    content:
+                        Text('Menu Pengaturan belum tersedia untuk MVP ini.')),
               );
             },
           ),
@@ -119,7 +122,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Quick Access Section
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Row(
                   children: [
                     _buildQuickActionCard(
@@ -127,7 +131,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       label: 'Add Record',
                       iconColor: AppTheme.onPrimaryContainer,
                       bgColor: AppTheme.primaryContainer,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddPetScreen())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AddPetScreen())),
                     ),
                     const SizedBox(width: 16),
                     _buildQuickActionCard(
@@ -135,7 +142,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       label: 'Find Clinic',
                       iconColor: Colors.white,
                       bgColor: AppTheme.tertiaryContainer,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicScreen())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ClinicScreen())),
                     ),
                     const SizedBox(width: 16),
                     _buildQuickActionCard(
@@ -145,7 +155,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       bgColor: AppTheme.primaryContainer.withOpacity(0.2),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Fitur reservasi Grooming akan segera hadir!')),
+                          const SnackBar(
+                              content: Text(
+                                  'Fitur reservasi Grooming akan segera hadir!')),
                         );
                       },
                     ),
@@ -153,9 +165,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
 
+// Dashboard Statistics
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: petState.when(
+                  data: (pets) {
+                    return Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceLowest,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.surfaceContainerLow),
+                        boxShadow: AppTheme.cardShadow,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Dashboard Statistics",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textOnSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildStatItem(
+                                Icons.pets,
+                                pets.length.toString(),
+                                "Pets",
+                              ),
+                              _buildStatItem(
+                                Icons.notifications_active,
+                                _activeReminders.length.toString(),
+                                "Reminders",
+                              ),
+                              _buildStatItem(
+                                Icons.local_hospital,
+                                "12",
+                                "Clinics",
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  error: (_, __) => const SizedBox(),
+                ),
+              ),
+
               // My Pets Section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -170,18 +240,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     TextButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Silakan gunakan tab "Pets" di menu bawah.')),
+                          const SnackBar(
+                              content: Text(
+                                  'Silakan gunakan tab "Pets" di menu bawah.')),
                         );
                       },
                       child: const Text(
                         'View all',
-                        style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
                 ),
               ),
-              
+
               petState.when(
                 data: (pets) {
                   if (pets.isEmpty) {
@@ -192,7 +266,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: AppTheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Center(child: Text('Belum ada hewan peliharaan.')),
+                      child: const Center(
+                          child: Text('Belum ada hewan peliharaan.')),
                     );
                   }
                   return SingleChildScrollView(
@@ -229,7 +304,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AppTheme.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Text('Tidak ada jadwal pengingat aktif.', textAlign: TextAlign.center),
+                        child: const Text('Tidak ada jadwal pengingat aktif.',
+                            textAlign: TextAlign.center),
                       )
                     : Column(
                         children: _activeReminders.map((notif) {
@@ -299,7 +375,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return GestureDetector(
       onTap: () {
         if (pet.id != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => PetDetailScreen(pet: pet)));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => PetDetailScreen(pet: pet)));
         }
       },
       child: Container(
@@ -329,7 +406,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     : null,
               ),
               child: pet.photoUrl == null
-                  ? const Icon(Icons.pets, size: 40, color: AppTheme.outlineVariant)
+                  ? const Icon(Icons.pets,
+                      size: 40, color: AppTheme.outlineVariant)
                   : null,
             ),
             const SizedBox(height: 12),
@@ -358,6 +436,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildStatItem(
+    IconData icon,
+    String value,
+    String label,
+  ) {
+    return Column(
+      children: [
+        Container(
+          width: 54,
+          height: 54,
+          decoration: BoxDecoration(
+            color: AppTheme.primaryContainer.withOpacity(0.25),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: AppTheme.primary,
+            size: 28,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textOnSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppTheme.textOnSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildReminderCard({
     required String title,
     required String body,
@@ -380,7 +499,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               color: AppTheme.tertiaryContainer.withOpacity(0.3),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.notifications_active, color: AppTheme.tertiary, size: 28),
+            child: const Icon(Icons.notifications_active,
+                color: AppTheme.tertiary, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
