@@ -12,6 +12,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isLogin = true;
+  bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -107,8 +108,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           TextFormField(
                             controller: _passwordController, 
                             enabled: !authState.isLoading,
-                            obscureText: true, 
-                            decoration: InputDecoration(labelText: 'Password', prefixIcon: const Icon(Icons.lock), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), 
+                            obscureText: _obscurePassword, 
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: authState.isLoading
+                                    ? null
+                                    : () => setState(() => _obscurePassword = !_obscurePassword),
+                              ),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ), 
                             validator: (v) => v!.length < 6 ? 'Min. 6 karakter' : null
                           ),
                           const SizedBox(height: 24),
