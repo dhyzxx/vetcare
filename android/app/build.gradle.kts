@@ -52,8 +52,8 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release") // Pakai signing config release
-            isMinifyEnabled = true // Disarankan true untuk release
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
