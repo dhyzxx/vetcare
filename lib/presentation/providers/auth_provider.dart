@@ -57,3 +57,31 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
     }
   }
 }
+
+// Provider terpisah untuk alur "Lupa Password" agar tidak mengganggu
+// authStateProvider utama (yang dipakai untuk navigasi login/home).
+final passwordResetStateProvider =
+    StateNotifierProvider.autoDispose<PasswordResetNotifier, AsyncValue<void>>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return PasswordResetNotifier(repository);
+});
+
+class PasswordResetNotifier extends StateNotifier<AsyncValue<void>> {
+  final AuthRepository _repository;
+
+  PasswordResetNotifier(this._repository) : super(const AsyncValue.data(null));
+
+  Future<void> resetPassword(String email, String newPassword) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.resetPassword(email, newPassword);
+      state = const AsyncValue.data(null);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  void resetState() {
+    state = const AsyncValue.data(null);
+  }
+}
