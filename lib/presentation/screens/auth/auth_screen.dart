@@ -74,7 +74,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             padding: const EdgeInsets.all(24.0),
             child: Column(
               children: [
-                Icon(Icons.pets, size: 80, color: AppTheme.primary),
+                const Icon(Icons.pets, size: 80, color: AppTheme.primary),
                 const SizedBox(height: 16),
                 const Text('VetCare', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppTheme.primary)),
                 const SizedBox(height: 32),

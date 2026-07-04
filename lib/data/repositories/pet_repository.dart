@@ -39,4 +39,46 @@ class PetRepository {
 
     await db.insert('pets', petData);
   }
+
+  /// Update data hewan yang sudah ada. Jika [imageFile] diisi, foto lama
+  /// akan diganti dengan foto baru; jika tidak, foto lama tetap dipakai.
+  Future<void> updatePet(PetModel pet, File? imageFile) async {
+    if (pet.id == null) {
+      throw Exception('ID hewan tidak ditemukan, tidak bisa update data.');
+    }
+
+    String? photoUrl = pet.photoUrl;
+
+    if (imageFile != null) {
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = '${_uuid.v4()}${p.extension(imageFile.path)}';
+      final savedImage = await imageFile.copy('${directory.path}/$fileName');
+      photoUrl = savedImage.path;
+    }
+
+    final db = await _dbHelper.database;
+    final petData = pet.toJson();
+    petData['photo_url'] = photoUrl;
+    // Kolom-kolom ini tidak boleh ikut ter-update oleh form edit
+    petData.remove('user_id');
+    petData.remove('created_at');
+
+    await db.update(
+      'pets',
+      petData,
+      where: 'id = ?',
+      whereArgs: [pet.id],
+    );
+  }
+
+  /// Hapus data hewan. Data medis terkait (vaksin, pengobatan, alergi)
+  /// otomatis terhapus juga lewat ON DELETE CASCADE di database.
+  Future<void> deletePet(String petId) async {
+    final db = await _dbHelper.database;
+    await db.delete(
+      'pets',
+      where: 'id = ?',
+      whereArgs: [petId],
+    );
+  }
 }

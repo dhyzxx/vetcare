@@ -153,7 +153,7 @@ class _ClinicScreenState extends ConsumerState<ClinicScreen> {
                                 ),
                               ),
                             );
-                          }).toList(),
+                          }),
                         ],
                       ),
                     ],

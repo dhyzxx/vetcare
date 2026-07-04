@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/pet_model.dart';
 import '../../data/repositories/pet_repository.dart';
@@ -30,5 +31,17 @@ class PetListNotifier extends StateNotifier<AsyncValue<List<PetModel>>> {
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
+  }
+
+  /// Update data hewan lalu refresh daftar hewan.
+  Future<void> updatePet(PetModel pet, File? imageFile) async {
+    await _repository.updatePet(pet, imageFile);
+    await loadPets();
+  }
+
+  /// Hapus hewan lalu refresh daftar hewan.
+  Future<void> deletePet(String petId) async {
+    await _repository.deletePet(petId);
+    await loadPets();
   }
 }
