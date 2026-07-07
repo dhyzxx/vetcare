@@ -58,6 +58,28 @@ class AuthRepository {
     return user;
   }
 
+  Future<void> resetPassword(String email, String newPassword) async {
+    final db = await _dbHelper.database;
+
+    // Pastikan email terdaftar sebelum reset password
+    final existing = await db.query(
+      'users_profile',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    if (existing.isEmpty) {
+      throw Exception('Email tidak terdaftar!');
+    }
+
+    await db.update(
+      'users_profile',
+      {'password': newPassword},
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
+
   Future<void> signOut() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_sessionKey);

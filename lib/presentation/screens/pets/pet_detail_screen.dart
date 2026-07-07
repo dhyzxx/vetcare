@@ -146,13 +146,23 @@ class _PetDetailScreenState extends ConsumerState<PetDetailScreen> {
     super.dispose();
   }
 
+  Widget _buildInfoChip(IconData icon, String label) {
+    return Chip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pet = widget.pet;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.pet.name),
+          title: Text(pet.name),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Vaksin'),
@@ -161,11 +171,31 @@ class _PetDetailScreenState extends ConsumerState<PetDetailScreen> {
             ],
           ),
         ),
-        body: TabBarView(
+        body: Column(
           children: [
-            _buildVaccinationTab(ref, widget.pet.id!),
-            _buildTreatmentTab(ref, widget.pet.id!),
-            _buildAllergyTab(ref, widget.pet.id!),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildInfoChip(Icons.pets, pet.breed?.isNotEmpty == true ? pet.breed! : pet.species),
+                  if (pet.gender != null) _buildInfoChip(Icons.wc, pet.gender!),
+                  if (pet.birthDate != null && pet.birthDate!.isNotEmpty)
+                    _buildInfoChip(Icons.cake, 'Umur: ${pet.ageLabel}'),
+                  if (pet.weight != null) _buildInfoChip(Icons.monitor_weight, '${pet.weight} kg'),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildVaccinationTab(ref, widget.pet.id!),
+                  _buildTreatmentTab(ref, widget.pet.id!),
+                  _buildAllergyTab(ref, widget.pet.id!),
+                ],
+              ),
+            ),
           ],
         ),
         floatingActionButton: Builder(

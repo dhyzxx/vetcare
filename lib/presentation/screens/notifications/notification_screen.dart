@@ -330,13 +330,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       backgroundColor: AppTheme.background,
       appBar: AppBar(title: const Text('Pengingat', style: TextStyle(fontWeight: FontWeight.bold))),
       body: _pendingNotifications.isEmpty
-          ? Center(
+          ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.notifications_off_outlined, size: 80, color: AppTheme.outlineVariant),
-                  const SizedBox(height: 16),
-                  const Text(
+                  SizedBox(height: 16),
+                  Text(
                     'Tidak ada pengingat aktif',
                     style: TextStyle(color: AppTheme.textOnSurfaceVariant, fontSize: 16),
                   ),
